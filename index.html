@@ -3,6 +3,7 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>How to Vote</title>
+    <link rel="stylesheet" type="text/css" href="main.css">
     <!-- VueJS -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js"></script>
     <!-- Sortable -->
@@ -66,20 +67,29 @@
 
           <div class="ticket" v-for="ticket in electorateTickets">
             <h3>{{ ticket.name }}</h3>
-            <ul>
-              <li class="candidate" v-for="candidate in ticket.candidates">
-                <span class="candidate-vote">
-                  [ {{ preferences.indexOf(candidate)+1 }} ]
-                </span>
-                <span class="candidate-name">
-                  {{ candidate.surname }},
-                  {{ candidate.ballot_given_nm }}
-                </span>
-                <span class="candidate-party">
-                  {{ candidate.party_ballot_nm }}
-                </span>
-              </li>
-            </ul>
+            <table>
+              <tbody>
+                <tr class="candidate" v-for="candidate in ticket.candidates">
+                  <td class="candidate-logo">
+                    <img v-bind:src="candidate.logo" v-bind:alt="candidate.party">
+                  </td>
+                  <td>
+                    <span class="candidate-vote">
+                      [ {{ preferences.indexOf(candidate)+1 }} ]
+                    </span>
+                  </td>
+                  <td>
+                    <span class="candidate-name">
+                      {{ candidate.surname }},
+                      {{ candidate.ballot_given_nm }}
+                    </span>
+                    <span class="candidate-party">
+                      {{ candidate.party_ballot_nm }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
