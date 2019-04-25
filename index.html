@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>How to Vote</title>
+    <!-- VueJS -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/2.5.2/vue.min.js"></script>
+    <!-- Sortable -->
+    <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+    <!-- Vue.Draggable -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.17.0/vuedraggable.min.js"></script>
+    <!-- D3 CSV -->
+    <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+    <!-- D3 fetch -->
+    <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
+    <!-- Underscore -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.1/underscore-min.js" integrity="sha256-G7A4JrJjJlFqP0yamznwPjAApIKPkadeHfyIwiaa9e0=" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <div>
+      <h1>How to Vote</h1>
+      <section id="preferences"></section>
+    </div>
+
+    <script type="text/x-template" id="preferences-template">
+      <div>
+        <p v-if="!electorates">Loading electorates</p>
+        <select v-if="electorates" v-model="electorate">
+          <option disabled value="">Select an electorate</option>
+          <option v-for="electorate in electorates" v-bind:value="electorate.name">
+            {{ electorate.name }}
+          </option>
+        </select>
+
+        <div class="preferences" v-if="electorate">
+          <h2>Preferences</h2>
+          <p v-if="!candidates">Loading candidates</p>
+
+          <table v-if="preferences">
+            <thead>
+              <tr>
+                <th>Vote</th>
+                <th>Name</th>
+                <th>Party</th>
+              </tr>
+            </thead>
+            <draggable v-bind:list="preferences" v-bind:options="{animation: 200}" v-bind:element="'tbody'">
+              <tr v-for="(candidate, index) in preferences">
+                <td>
+                  [{{ index+1 }}]
+                </td>
+                <td>
+                  {{ candidate.surname }},
+                  {{ candidate.ballot_given_nm }}
+                </td>
+                <td>
+                  {{ candidate.party_ballot_nm }}
+                </td>
+              </tr>
+            </draggable>
+          </table>
+        </div>
+
+        <div class="ballot" v-if="preferences">
+          <h2>Ballot</h2>
+
+          <div class="ticket" v-for="ticket in electorateTickets">
+            <h3>{{ ticket.name }}</h3>
+            <ul>
+              <li class="candidate" v-for="candidate in ticket.candidates">
+                <span class="candidate-vote">
+                  [ {{ preferences.indexOf(candidate)+1 }} ]
+                </span>
+                <span class="candidate-name">
+                  {{ candidate.surname }},
+                  {{ candidate.ballot_given_nm }}
+                </span>
+                <span class="candidate-party">
+                  {{ candidate.party_ballot_nm }}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </script>
+
+    <script>
+      var howtovote = new Vue({
+        el: '#preferences',
+        template: '#preferences-template',
+        data: {
+          electorate: undefined,
+          electorates: undefined,
+          candidates: undefined,
+          preferences: undefined, 
+        },
+        watch: {
+          electorate: function() {
+            this.preferences = this.electorateCandidates;
+          },
+        },
+        computed: {
+          electorateTickets: function() {
+            return _.map(_.groupBy(this.electorateCandidates, 'ticket'), function(ticket) {
+              return {name: ticket[0].ticket, candidates: ticket};
+            });
+          },
+          electorateCandidates: function() {
+            var electorate = this.electorate;
+            return this.candidates
+              .filter(function(candidate) {
+                return candidate.div_nm == electorate;
+              });
+          },
+        },
+      });
+
+      d3.csv("electorates.csv").then(function(electorates) {
+        howtovote.electorates = electorates; 
+      });
+      d3.csv("candidates.csv").then(function(candidates) {
+        howtovote.candidates = candidates;
+      });
+    </script>
+  </body>
+</html>
